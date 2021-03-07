@@ -36,6 +36,12 @@ $ npm run prettier
 $npm run build
 ```
 
+## Documentation
+Run the following command and then visit: `http://localhost:8000/v1/docs`
+```
+$npm run docs
+```
+
 ## Seed Collections
 In order to seed the collection, first build the api using above command and then run following command
 ```
