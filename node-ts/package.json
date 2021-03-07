@@ -11,7 +11,8 @@
     "prettier": "prettier --write src/**/*.ts",
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix",
-    "docs": "apidoc -i src/config/apidoc/ -o static/docs/"
+    "docs": "apidoc -i src/config/apidoc/ -o static/docs/",
+    "db:seed": "node ./build/config/seed/seeder.js"
   },
   "author": "Vinay Shrestha",
   "license": "ISC",
@@ -60,6 +61,7 @@
     "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.20",
     "mongoose": "^5.11.8",
+    "mongoose-seed": "^0.6.0",
     "ms": "^2.1.3",
     "reflect-metadata": "^0.1.13",
     "winston": "^3.3.3",

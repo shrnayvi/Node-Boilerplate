@@ -1,7 +1,7 @@
 {
     "_type": "export",
     "__export_format": 4,
-    "__export_date": "2021-03-06T16:53:22.372Z",
+    "__export_date": "2021-03-07T13:17:32.366Z",
     "__export_source": "insomnia.desktop.app:v7.1.1",
     "resources": [
         {
@@ -189,7 +189,7 @@
             "authentication": {},
             "body": {
                 "mimeType": "application/json",
-                "text": "{\n\t\"email\": \"test@yopmail.com\",\n\t\"password\": \"password\"\n}"
+                "text": "{\n\t\"email\": \"{{ email  }}\",\n\t\"password\": \"{{ password  }}\"\n}"
             },
             "created": 1615017280529,
             "description": "",
@@ -203,7 +203,7 @@
             "isPrivate": false,
             "metaSortKey": -1612295094490.5,
             "method": "POST",
-            "modified": 1615044877017,
+            "modified": 1615122983963,
             "name": "Login",
             "parameters": [],
             "parentId": "fld_87faf958602149999cf8e80b6ccf3275",
@@ -454,6 +454,8 @@
             "created": 1615017013456,
             "data": {
                 "baseUrl": "http://localhost",
+                "email": "admin@api.com",
+                "password": "password",
                 "port": "8080",
                 "version": "v1"
             },
@@ -461,13 +463,42 @@
                 "&": [
                     "baseUrl",
                     "port",
-                    "version"
+                    "version",
+                    "email",
+                    "password"
                 ]
             },
             "isPrivate": false,
             "metaSortKey": 1615017013456,
-            "modified": 1615017049796,
-            "name": "Local",
+            "modified": 1615122996868,
+            "name": "Local(Admin)",
+            "parentId": "env_085a07255e131d041920140b5aed74c463a7132d",
+            "_type": "environment"
+        },
+        {
+            "_id": "env_1ee71b8020d74ef3b766cfd57e636455",
+            "color": "#359c78",
+            "created": 1615122998844,
+            "data": {
+                "baseUrl": "http://localhost",
+                "email": "user@api.com",
+                "password": "password",
+                "port": "8080",
+                "version": "v1"
+            },
+            "dataPropertyOrder": {
+                "&": [
+                    "baseUrl",
+                    "port",
+                    "version",
+                    "email",
+                    "password"
+                ]
+            },
+            "isPrivate": false,
+            "metaSortKey": 1615017013506,
+            "modified": 1615123008700,
+            "name": "Local(User)",
             "parentId": "env_085a07255e131d041920140b5aed74c463a7132d",
             "_type": "environment"
         }

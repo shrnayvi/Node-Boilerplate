@@ -1,4 +1,17 @@
 /**
+ * @api {get} /Insomnia_2021-03-07.json Insomnia file
+ * @apiName GetInsomnia
+ * @apiDescription Endpoint for Insomnia file
+ * <br />
+ * <a href="/v1/Insomnia_2021-03-07.json">Insomnia File</a>
+ * @apiGroup Insomnia
+ *
+ *
+ * @apiSuccessExample {json} Success-Response:
+ *  HTTP/1.1 200
+ */
+
+/**
  * @api {get} /status Status
  * @apiName GetStatus
  * @apiDescription Endpoint for the app status

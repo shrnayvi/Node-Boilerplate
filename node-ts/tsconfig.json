@@ -6,13 +6,16 @@
     "rootDir": "./src",
     "strict": true,
     "moduleResolution": "node",
-    "types": ["reflect-metadata", "jest"],
+    "types": ["reflect-metadata"],
     "esModuleInterop": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "lib": ["es2018", "esnext.asynciterable"],
-    "strictPropertyInitialization": false
+    "strictPropertyInitialization": false,
+    "typeRoots": [
+      "./types"
+    ]
   }
 }
