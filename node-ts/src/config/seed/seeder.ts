@@ -1,8 +1,7 @@
-const seeder = require('mongoose-seed');
+import seeder from 'mongoose-seed';
 
-const config = require('../').default;
-
-const users = require('./users');
+import config from '../';
+import users from './users';
 
 seeder.connect(config.mongo.url, function () {
   seeder.loadModels(['build/models/user.js']);
