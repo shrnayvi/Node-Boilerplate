@@ -25,20 +25,17 @@ import UserTokenController from './controllers/TokenController';
 import AppService from './services/AppService';
 import AppController from './controllers/AppController';
 
-// Auth
-import AuthController from './controllers/AuthController';
-
 // Logger
 import { ILogger } from './interfaces/ILogger';
 import WinstonLogger from './utils/WinstonLogger';
 
+// Graphql
+import { IGraphql } from './interfaces/IGraphql';
+import GraphqlService from './services/GraphqlService';
+
 // JWT
 import { ITokenService } from './interfaces/ITokenService';
 import JWTService from './services/JWTService';
-
-// Validation
-import { IAuthValidation } from './interfaces/validation/IAuthValidation';
-import AuthValidation from './validation/AuthValidation';
 
 // Hash
 import { IHashService } from './interfaces/services/IHashService';
@@ -47,17 +44,29 @@ import BcryptService from './services/BcryptService';
 // Auth
 import { IAuthService } from './interfaces/services/IAuthService';
 import AuthService from './services/AuthService';
+import AuthController from './controllers/AuthController';
 
 // Email
 import { IEmailService } from './interfaces/services/IEmailService';
 import EmailService from './services/EmailService';
 
+// Error
+import { IErrorService } from './interfaces/services/IErrorService';
+import ErrorService from './services/ErrorService';
+
+// Joi
+import { IJoiService } from './interfaces/services/IJoiService';
+import JoiService from './services/JoiService';
+
+// MockExample:
+import UserRepositoryMock from './tests/unit/mock/UserRepository';
+
 const container = new Container();
 
 // User
+//MockExample: container.bind<IUserRepository>(TYPES.UserRepository).to(UserRepositoryMock);
 container.bind<IUserRepository>(TYPES.UserRepository).to(UserRepository);
 container.bind<IUserService>(TYPES.UserService).to(UserService);
-container.bind<UserController>(TYPES.UserController).to(UserController);
 
 // App
 container.bind<IAppService>(TYPES.AppService).to(AppService);
@@ -77,11 +86,11 @@ container.bind<interfaces.Factory<ILogger>>(TYPES.LoggerFactory).toFactory<ILogg
   };
 });
 
+// Graphql
+container.bind<IGraphql>(TYPES.GraphqlService).to(GraphqlService);
+
 // JWT
 container.bind<ITokenService>(TYPES.TokenService).to(JWTService);
-
-// Validation
-container.bind<IAuthValidation>(TYPES.AuthValidation).to(AuthValidation);
 
 // HashService
 container.bind<IHashService>(TYPES.HashService).to(BcryptService);
@@ -93,5 +102,12 @@ container.bind<IEmailService>(TYPES.EmailService).to(EmailService);
 container.bind<IUserTokenRepository>(TYPES.UserTokenRepository).to(UserTokenRepository);
 container.bind<IUserTokenService>(TYPES.UserTokenService).to(UserTokenService);
 container.bind<UserTokenController>(TYPES.UserTokenController).to(UserTokenController);
+container.bind<UserController>(TYPES.UserController).to(UserController);
+
+// Error
+container.bind<IErrorService>(TYPES.ErrorService).to(ErrorService);
+
+// Joi
+container.bind<IJoiService>(TYPES.JoiService).to(JoiService);
 
 export default container;

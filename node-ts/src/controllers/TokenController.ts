@@ -4,10 +4,8 @@ import { Request, Response, NextFunction } from 'express';
 import config from '../config';
 import { TYPES } from '../types';
 import { IAuthService } from '../interfaces/services/IAuthService';
-import { IUserLoginServiceResponse } from '../interfaces/entities/IUser';
+import { IUserLoginResponse } from '../interfaces/entities/IUser';
 import { ILogger } from '../interfaces/ILogger';
-
-import { AppError } from '../utils/ApiError';
 
 @injectable()
 export default class TokenController {
@@ -28,7 +26,7 @@ export default class TokenController {
     let newAccessToken: string = '';
     if (refreshToken) {
       try {
-        const tokenResult: IUserLoginServiceResponse = await this.authService.renewAccessToken(refreshToken);
+        const tokenResult: IUserLoginResponse = await this.authService.renewAccessToken(refreshToken);
         return res.status(200).send({
           message: 'Token refresh successful',
           data: {

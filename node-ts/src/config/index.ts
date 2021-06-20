@@ -1,5 +1,7 @@
 import * as dotenv from 'dotenv';
 
+import translationKey from './translationKey';
+
 dotenv.config();
 
 const originsEnv = process.env.ORIGINS;
@@ -15,10 +17,11 @@ export default {
   env: process.env.NODE_ENV || 'development',
   port: process.env.PORT,
   baseUrl: process.env.BASE_URL,
-  appName: process.env.APP_NAME || 'boilerplate',
+  appName: process.env.APP_NAME || 'node-boilerplate',
   secretKey: process.env.SECRET_KEY || 'secretKey',
   refreshTokenKey: process.env.REFRESH_TOKEN_SECRET_KEY || 'refreshSecretKey',
   refreshTokenCookieName: process.env.REFRESH_TOKEN_COOKIE_NAME || 'refreshToken',
+  translationKey,
   saltRounds: process.env.SALT_ROUNDS || 10,
   verificationEmailTokenExpiration: process.env.VERIFICATION_EMAIL_EXPIRATION || '1d',
   authTokenExpiration: process.env.AUTH_TOKEN_EXPIRATION || '10s',
@@ -26,6 +29,9 @@ export default {
   forgotPasswordTokenExpiration: process.env.FORGOT_PASSWORD_TOKEN_EXPIRATION || '1hr',
   tokenType: {
     refresh: 'refresh',
+  },
+  languages: {
+    english: 'en',
   },
   mongo: {
     url: process.env.MONGO_URL || `mongodb://127.0.0.1:27017/boilerplate`,
@@ -50,6 +56,9 @@ export default {
       debug: 'debug',
       silly: 'silly',
     },
+  },
+  acl: {
+    // acl values goes here, eg. user: ['admin', 'user']
   },
   events: {
     onSignUp: 'onSignUp',

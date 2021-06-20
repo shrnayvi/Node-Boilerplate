@@ -1,185 +1,240 @@
+import ms from 'ms';
 import { inject, injectable } from 'inversify';
 import { Request, Response, NextFunction } from 'express';
+import { CookieOptions } from 'express';
 
 import config from '../config';
 import { TYPES } from '../types';
+import { IUserSignupResponse } from '../interfaces/entities/IUser';
 import { IAuthService } from '../interfaces/services/IAuthService';
-import { ILogger } from '../interfaces/ILogger';
+import { IJoiService } from '../interfaces/services/IJoiService';
+import AuthService from '../services/AuthService';
+import AuthValidation from '../validation/AuthValidation';
 
-import { AppError } from '../utils/ApiError';
-import { IUserCreate } from '../interfaces/entities/IUser';
+const translationKey = config.translationKey;
 
 @injectable()
 export default class AuthController {
+  private name = 'AuthController';
   private authService: IAuthService;
-  private logger: ILogger;
+  private joiService: IJoiService;
 
-  constructor(
-    @inject(TYPES.AuthService) authService: IAuthService,
-    @inject(TYPES.LoggerFactory) loggerFactory: (name: string) => ILogger
-  ) {
+  constructor(@inject(TYPES.AuthService) authService: IAuthService, @inject(TYPES.JoiService) joiService: IJoiService) {
     this.authService = authService;
-    this.logger = loggerFactory('AuthController');
+    this.joiService = joiService;
   }
 
-  signUp = async (req: Request, res: Response, next: NextFunction) => {
-    const operation = 'signUp';
+  register = async (req: Request, res: Response, next: NextFunction) => {
+    const operation = 'register';
 
     try {
-      // TODO: Validate using Joi?
-      let signUpResponse = await this.authService.signUp(req.body);
-      return res.status(200).send({ message: 'User registered successfully' });
-    } catch (err) {
-      this.logger.error({
-        operation,
-        message: err.message,
-        data: err,
+      const args = req.body;
+
+      const email = args.email;
+      const password = args.password;
+      const firstName = args.firstName;
+      const lastName = args.lastName;
+
+      const schema = AuthValidation.signUp();
+
+      await this.joiService.validate({
+        schema,
+        input: {
+          email,
+          password,
+          firstName,
+          lastName,
+        },
       });
+
+      let signUpResponse = await this.authService.signUp({
+        email,
+        password,
+        firstName,
+        lastName,
+      });
+
+      return res.status(200).send({
+        message: res.__(translationKey.registerSuccess),
+        data: signUpResponse,
+      });
+    } catch (err) {
       next(err);
     }
   };
 
   login = async (req: Request, res: Response, next: NextFunction) => {
     const operation = 'login';
+
     try {
-      // TODO: Validate using Joi?
-      const loginResponse = await this.authService.login(req.body);
+      const args = req.body;
+      const email = args.email;
+      const password = args.password;
+
+      const schema = AuthValidation.login();
+
+      await this.joiService.validate({
+        schema,
+        input: {
+          email,
+          password,
+        },
+      });
+
+      const loginResponse = await this.authService.login({
+        email,
+        password,
+      });
+
+      const options: CookieOptions = {
+        maxAge: ms(config.refreshTokenExpiration),
+        httpOnly: true,
+      };
+
+      res.cookie(config.refreshTokenCookieName, loginResponse.refreshToken, options);
+
       return res.status(200).send({
-        message: 'Login successful',
+        message: res.__(translationKey.loginSuccess),
         data: loginResponse,
       });
     } catch (err) {
-      this.logger.error({
-        operation,
-        message: err.message,
-        data: err,
-      });
       next(err);
     }
   };
 
   verifyEmail = async (req: Request, res: Response, next: NextFunction) => {
     const operation = 'verifyEmail';
+
     try {
-      // TODO: Validate using Joi?
-      let response = await this.authService.verifyEmail(req.body);
+      const args = req.body;
+      const token = args?.token;
+
+      const schema = AuthValidation.emailVerification();
+
+      await this.joiService.validate({
+        schema,
+        input: {
+          token,
+        },
+      });
+
+      let response = await this.authService.verifyEmail({
+        token,
+      });
+
       return res.status(200).send({
-        message: 'Email verified',
+        message: res.__(translationKey.verifyEmailSuccess),
         data: response,
       });
     } catch (err) {
-      this.logger.error({
-        operation,
-        message: err.message,
-        data: err,
-      });
       next(err);
     }
   };
 
   forgotPassword = async (req: Request, res: Response, next: NextFunction) => {
     const operation = 'forgotPassword';
+
     try {
-      // TODO: Validate using Joi?
-      let response = await this.authService.forgotPassword(req.body);
+      const _id = req.params._id;
+      const args = req.body;
+      const email = args?.email;
+
+      const schema = AuthValidation.forgotPassword();
+      await this.joiService.validate({
+        schema,
+        input: {
+          email,
+        },
+      });
+
+      let response = await this.authService.forgotPassword({
+        email,
+      });
+
       return res.status(200).send({
-        message: 'Reset link has been sent',
+        message: res.__(translationKey.forgotPasswordSuccess),
         data: response,
       });
     } catch (err) {
-      this.logger.error({
-        operation,
-        message: err.message,
-        data: err,
-      });
       next(err);
     }
   };
 
   resetPassword = async (req: Request, res: Response, next: NextFunction) => {
     const operation = 'resetPassword';
+
     try {
-      // TODO: Validate using Joi?
-      let response = await this.authService.resetPassword(req.body);
+      const _id = req.params._id;
+      const args = req.body;
+      const token = args?.token;
+      const password = args?.password;
+
+      const schema = AuthValidation.resetPassword();
+      await this.joiService.validate({
+        schema,
+        input: {
+          token,
+          password,
+        },
+      });
+
+      let response = await this.authService.resetPassword({
+        token,
+        password,
+      });
+
       return res.status(200).send({
-        message: 'Password reset successful',
+        message: res.__(translationKey.resetPasswordSuccess),
         data: response,
       });
     } catch (err) {
-      this.logger.error({
-        operation,
-        message: err.message,
-        data: err,
-      });
       next(err);
     }
   };
 
   resendEmailVerification = async (req: Request, res: Response, next: NextFunction) => {
     const operation = 'resendEmailVerification';
-    try {
-      // TODO: Validate using Joi?
-      let response = await this.authService.resendVerificationEmail(req.body);
-      return res.status(200).send({
-        message: 'Verificaion email sent',
-        data: response,
-      });
-    } catch (err) {
-      this.logger.error({
-        operation,
-        message: err.message,
-        data: err,
-      });
-      next(err);
-    }
-  };
 
-  renewAccessToken = async (req: Request, res: Response, next: NextFunction) => {
-    const operation = 'renewAccessToken';
     try {
-      // TODO: Validate using Joi?
-      let response = await this.authService.renewAccessToken(req.body?.refreshToken);
+      const _id = req.params._id;
+      const args = req.body;
+      const email = args?.email;
+
+      const schema = AuthValidation.resendVerificationEmail();
+      await this.joiService.validate({
+        schema,
+        input: {
+          email,
+        },
+      });
+
+      let response = await this.authService.resendVerificationEmail({
+        email,
+      });
+
       return res.status(200).send({
-        message: 'Access token renewed',
+        message: res.__(translationKey.resendEmailVerificationSuccess),
         data: response,
       });
     } catch (err) {
-      this.logger.error({
-        operation,
-        message: err.message,
-        data: err,
-      });
       next(err);
     }
   };
 
   logout = async (req: Request, res: Response, next: NextFunction) => {
     const operation = 'logout';
+
     try {
       const cookie = req?.cookies || {};
-      let refreshToken: string = cookie[config.refreshTokenCookieName];
-      if (!refreshToken) {
-        refreshToken = req.body?.refreshToken;
 
-        if (!refreshToken) {
-          return res.status(400).send({
-            message: 'Refresh token not provided',
-            data: {},
-          });
-        }
+      const refreshToken = cookie[config.refreshTokenCookieName];
+      if (refreshToken) {
+        return this.authService.logout(refreshToken);
       }
-
-      const isLoggedOut = await this.authService.logout(refreshToken);
       return res.status(200).send({
-        message: 'Logout successful',
-        data: isLoggedOut,
+        message: res.__(translationKey.logoutSuccess),
       });
     } catch (err) {
-      this.logger.error({
-        operation,
-        message: err.message,
-        data: err,
-      });
       next(err);
     }
   };

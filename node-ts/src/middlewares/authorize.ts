@@ -5,6 +5,7 @@ import container from '../inversify.config';
 import { ILogger } from '../interfaces/ILogger';
 import { IUserAuthRequest } from '../interfaces/IUserAuthRequest';
 import { ForbiddenError } from '../utils/ApiError';
+import translationKey from '../config/translationKey';
 
 const logger = container.get<ILogger>(TYPES.Logger);
 logger.init('server');
@@ -14,22 +15,24 @@ logger.init('server');
  * @param {Array|string} roles User roles to access resource
  */
 
-export default (...roles: string[]) => {
+export default (roles: string | Array<string> = []) => {
+  if (typeof roles === 'string') {
+    roles = [roles];
+  }
+
   /**
    * @param {Request} req Request object
    * @param {Response} res Response object
    * @param {NextFunction} next Next function
    */
-  return (eReq: Request, res: Response, next: NextFunction) => {
-    const req = eReq as IUserAuthRequest;
-    if (roles.length && roles.includes(req.user.role)) {
+  return (req: Request, res: Response, next: NextFunction) => {
+    const _req = req as IUserAuthRequest;
+    if (roles.length && roles.includes(_req.user.role)) {
       next();
     } else {
       const error = new ForbiddenError({
-        message: 'Forbidden',
-        data: {
-          user: req?.user?._id,
-        },
+        message: translationKey.forbidden,
+        details: [translationKey.userNotAuthorized],
       });
       next(error);
     }

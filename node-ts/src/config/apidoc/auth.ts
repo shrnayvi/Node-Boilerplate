@@ -1,5 +1,5 @@
 /**
- * @api {post} /auth/register Register
+ * @api {post} /v1/auth/register Register
  * @apiDescription Register new user
  * @apiVersion 1.0.0
  * @apiName RegisterUser
@@ -35,7 +35,7 @@
  */
 
 /**
- * @api {post} /auth/login Login
+ * @api {post} /v1/auth/login Login
  * @apiDescription User login
  * @apiVersion 1.0.0
  * @apiName UserLogin
@@ -77,7 +77,7 @@
  */
 
 /**
- * @api {post} /auth/verify-email VerifyEmail
+ * @api {post} /v1/auth/verify-email VerifyEmail
  * @apiDescription Verify Email
  * @apiVersion 1.0.0
  * @apiName VerifyEmail
@@ -109,7 +109,7 @@
  */
 
 /**
- * @api {post} /auth/forgot-password ForgotPassword
+ * @api {post} /v1/auth/forgot-password ForgotPassword
  * @apiDescription Forgot password
  * @apiVersion 1.0.0
  * @apiName ForgotPassword
@@ -141,7 +141,7 @@
  */
 
 /**
- * @api {post} /auth/reset-password ResetPassword
+ * @api {post} /v1/auth/reset-password ResetPassword
  * @apiDescription Reset password
  * @apiVersion 1.0.0
  * @apiName ResetPassword

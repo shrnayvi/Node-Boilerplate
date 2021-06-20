@@ -5,9 +5,9 @@ import { TYPES } from '../types';
 import { IUserRepository } from '../interfaces/repository/IUserRepository';
 import { ITokenService } from '../interfaces/ITokenService';
 import { IAuthService } from '../interfaces/services/IAuthService';
-import { IAuthValidation } from '../interfaces/validation/IAuthValidation';
 import { IHashService } from '../interfaces/services/IHashService';
 import { IEmailService } from '../interfaces/services/IEmailService';
+import { IErrorService } from '../interfaces/services/IErrorService';
 import {
   IUserLogin,
   IUserCreate,
@@ -15,7 +15,7 @@ import {
   IForgotPasswordInput,
   IResetPasswordInput,
   IResendVerificationEmail,
-  IUserLoginServiceResponse,
+  IUserLoginResponse,
   IUserDocument,
   ITokenPayload,
 } from '../interfaces/entities/IUser';
@@ -24,56 +24,64 @@ import { IUserTokenService } from '../interfaces/services/IUserTokenService';
 import { ILogger } from '../interfaces/ILogger';
 import { userEmitter } from '../subscribers';
 
-import { ValidationError, NotFoundError, ConfictError } from '../utils/ApiError';
+import { ValidationError, NotFoundError, ConflictError } from '../utils/ApiError';
 
 @injectable()
 export default class AuthService implements IAuthService {
+  private name = 'AuthService';
   private userRepository: IUserRepository;
   private logger: ILogger;
   private tokenService: ITokenService;
-  private authValidation: IAuthValidation;
   private hashService: IHashService;
   private emailService: IEmailService;
   private userTokenService: IUserTokenService;
+  private errorService: IErrorService;
 
   constructor(
     @inject(TYPES.UserRepository) userRepository: IUserRepository,
     @inject(TYPES.TokenService) tokenService: ITokenService,
     @inject(TYPES.LoggerFactory) loggerFactory: (name: string) => ILogger,
-    @inject(TYPES.AuthValidation) authValidation: IAuthValidation,
     @inject(TYPES.HashService) hashService: IHashService,
     @inject(TYPES.EmailService) emailService: IEmailService,
-    @inject(TYPES.UserTokenService) userTokenService: IUserTokenService
+    @inject(TYPES.UserTokenService) userTokenService: IUserTokenService,
+    @inject(TYPES.ErrorService) errorService: IErrorService
   ) {
     this.userRepository = userRepository;
     this.tokenService = tokenService;
-    this.authValidation = authValidation;
     this.logger = loggerFactory('AuthService');
     this.hashService = hashService;
     this.emailService = emailService;
     this.userTokenService = userTokenService;
+    this.errorService = errorService;
   }
 
-  signUp = async (data: IUserCreate) => {
-    // Validate Signup data
-    this.authValidation.validateSignUp(data);
-
-    let role: string = config.roles.user;
+  signUp = async (args: IUserCreate) => {
+    const operation = 'signUp';
+    const role: string = config.roles.user;
+    const email = args.email;
+    const username = args.username;
+    const password = args.password;
+    const firstName = args.firstName;
+    const lastName = args.lastName;
 
     try {
-      let foundUser: IUserDocument | null = await this.userRepository.getSingleUser({ email: data.email });
+      let foundUser: IUserDocument | null = await this.userRepository.getUser({ email });
+
       if (foundUser) {
-        throw new ConfictError({
-          message: 'User already exists',
-          data: { email: data.email },
+        throw new ConflictError({
+          message: config.translationKey.userExists,
+          details: [config.translationKey.userExists],
+          data: { email: args.email },
         });
       }
 
-      let { password, ...args } = data;
       let hashedPassword: string = await this.hashService.hash(password, 12);
 
       let user = await this.userRepository.create({
-        ...args,
+        email,
+        firstName,
+        lastName,
+        username,
         role,
         password: hashedPassword,
       });
@@ -85,27 +93,37 @@ export default class AuthService implements IAuthService {
         _id: user._id,
       };
     } catch (err) {
-      throw err;
+      this.errorService.handleError({
+        err,
+        operation,
+        name: this.name,
+        logError: true,
+      });
     }
   };
 
-  login = async (data: IUserLogin): Promise<IUserLoginServiceResponse> => {
-    this.authValidation.validateLogin(data);
-
+  login = async (args: IUserLogin): Promise<IUserLoginResponse> => {
+    const operation = 'login';
     try {
-      const user = await this.userRepository.getSingleUser({ email: data.email });
+      const email = args.email;
+      const password = args.password;
+
+      const user = await this.userRepository.getUser({ email });
+
       if (!user) {
         throw new ValidationError({
-          message: 'Bad credentials',
-          data: { email: data.email },
+          message: config.translationKey.validationError,
+          details: [config.translationKey.badCredentials],
+          data: { email },
         });
       }
 
-      const isPasswordCorrect = await this.hashService.compare(data.password, user.password);
+      const isPasswordCorrect = await this.hashService.compare(password, user.password);
       if (!isPasswordCorrect) {
         throw new ValidationError({
-          message: 'Bad credentials',
-          data: { email: data.email },
+          message: config.translationKey.validationError,
+          details: [config.translationKey.badCredentials],
+          data: { email },
         });
       }
 
@@ -135,59 +153,71 @@ export default class AuthService implements IAuthService {
         refreshToken: refreshToken.token,
       };
     } catch (err) {
-      this.logger.error({
-        operation: 'akd',
-        message: 'Error',
-        data: err,
+      this.errorService.handleError({
+        err,
+        operation,
+        name: this.name,
+        logError: true,
       });
-      throw err;
     }
   };
 
-  verifyEmail = async (data: IVerifyEmailInput): Promise<boolean> => {
-    this.authValidation.validateEmailVerification(data);
+  verifyEmail = async (args: IVerifyEmailInput): Promise<boolean> => {
+    const operation = 'verifyEmail';
 
     try {
-      let decoded = await this.tokenService.verifyToken({ token: data.token, secretKey: config.secretKey });
+      const token = args.token;
+
+      let decoded = await this.tokenService.verifyToken({ token, secretKey: config.secretKey });
       let { email } = decoded;
+
       if (!email) {
         throw new ValidationError({
-          message: 'Token invalid',
-          data,
+          message: config.translationKey.validationError,
+          details: [config.translationKey.tokenInvalid],
+          data: args,
         });
       }
 
-      let user = await this.userRepository.getSingleUser({ email });
+      let user = await this.userRepository.getUser({ email });
       if (!user) {
         throw new NotFoundError({
-          message: 'User not found',
+          message: config.translationKey.userNotFound,
+          details: [config.translationKey.userNotFound],
           data: {
             email,
           },
         });
       }
 
-      let updatedUser = await this.userRepository.update(user._id, {
+      let updatedUser = await this.userRepository.update({
+        _id: user._id,
         isEmailVerified: true,
       });
 
       return true;
     } catch (err) {
-      throw err;
+      this.errorService.handleError({
+        err,
+        operation,
+        name: this.name,
+        logError: true,
+      });
     }
   };
 
-  forgotPassword = async (data: IForgotPasswordInput): Promise<boolean> => {
+  forgotPassword = async (args: IForgotPasswordInput): Promise<boolean> => {
     const operation = 'forgotPassword';
 
-    this.authValidation.validateForgotPassword(data);
-
     try {
-      const user: IUserDocument | null = await this.userRepository.getSingleUser({ email: data.email });
+      const email = args.email;
+
+      const user: IUserDocument | null = await this.userRepository.getUser({ email });
       if (!user) {
         throw new NotFoundError({
-          message: 'User not found',
-          data,
+          message: config.translationKey.userNotFound,
+          details: [config.translationKey.userNotFound],
+          data: args,
         });
       }
 
@@ -204,21 +234,28 @@ export default class AuthService implements IAuthService {
           token,
         })
         .catch((err) => {
-          this.logger.error({ operation, message: 'Error sending email', data: err });
+          this.logger.error({ operation, message: 'Error sending email', data: args });
         });
 
       return true;
     } catch (err) {
-      throw err;
+      this.errorService.handleError({
+        err,
+        operation,
+        name: this.name,
+        logError: true,
+      });
     }
   };
 
-  resetPassword = async (data: IResetPasswordInput): Promise<boolean> => {
-    this.authValidation.validateResetPasswordValidation(data);
-
+  resetPassword = async (args: IResetPasswordInput): Promise<boolean> => {
+    const operation = 'resetPassword';
     try {
+      const token = args.token;
+      const password = args.password;
+
       let decoded: any = await this.tokenService.verifyToken({
-        token: data.token,
+        token,
         secretKey: config.secretKey,
       });
 
@@ -226,54 +263,75 @@ export default class AuthService implements IAuthService {
         let user: IUserDocument | null = await this.userRepository.getById(decoded._id);
         if (!user) {
           throw new NotFoundError({
-            message: 'User not found',
+            message: config.translationKey.userNotFound,
+            details: [config.translationKey.userNotFound],
             data: { _id: decoded._id },
           });
         }
 
-        const hashedPassword: string = await this.hashService.hash(data.password);
+        const hashedPassword: string = await this.hashService.hash(password);
 
         return this.userRepository.changePassword(decoded._id, hashedPassword);
       }
 
       return false;
     } catch (err) {
-      throw err;
+      this.errorService.handleError({
+        err,
+        operation,
+        name: this.name,
+        logError: true,
+      });
     }
   };
 
-  resendVerificationEmail = async (data: IResendVerificationEmail): Promise<boolean> => {
-    // vaidation
-    this.authValidation.validateResendVerification(data);
+  resendVerificationEmail = async (args: IResendVerificationEmail): Promise<boolean> => {
+    const operation = 'resendVerificationEmail';
 
     try {
-      const user: IUserDocument | null = await this.userRepository.getSingleUser({ email: data.email });
+      const email = args.email;
+
+      const user: IUserDocument | null = await this.userRepository.getUser({ email });
       if (!user) {
         throw new NotFoundError({
-          message: 'User not found',
-          data,
+          message: config.translationKey.userNotFound,
+          details: [config.translationKey.userNotFound],
+          data: args,
         });
       }
 
-      // TODO: Generate token and send email
-      //this.emailService
-      //.sendMail(data)
-      //.then((_) =>
-      //this.logger.info({ message: 'Resend verification email sent', operation: 'resendVerificationEmail', data })
-      //);
+      this.emailService
+        .sendMail({
+          email,
+        })
+        .then((_) =>
+          this.logger.info({
+            message: 'Resend verification email sent',
+            operation: 'resendVerificationEmail',
+            data: args,
+          })
+        );
 
       return true;
     } catch (err) {
-      throw err;
+      this.errorService.handleError({
+        err,
+        operation,
+        name: this.name,
+        logError: true,
+      });
     }
   };
 
-  renewAccessToken = async (refreshToken: string): Promise<IUserLoginServiceResponse> => {
+  renewAccessToken = async (refreshToken: string): Promise<IUserLoginResponse> => {
+    const operation = 'renewAccessToken';
+
     try {
       const tokenDoc: IUserTokenDocument | null = await this.userTokenService.getByToken(refreshToken);
       if (!tokenDoc) {
         throw new ValidationError({
-          message: 'Invalid Token',
+          message: config.translationKey.validationError,
+          details: [config.translationKey.tokenInvalid],
           data: { refreshToken },
         });
       }
@@ -291,7 +349,8 @@ export default class AuthService implements IAuthService {
 
       if (!decoded) {
         throw new ValidationError({
-          message: 'Invalid Token',
+          message: config.translationKey.validationError,
+          details: [config.translationKey.tokenInvalid],
           data: { refreshToken },
         });
       }
@@ -309,18 +368,34 @@ export default class AuthService implements IAuthService {
 
       return {
         token: newAccessToken,
+        refreshToken,
         ...payload,
       };
     } catch (err) {
-      throw err;
+      this.errorService.handleError({
+        err,
+        operation,
+        name: this.name,
+        logError: true,
+      });
     }
   };
 
   logout = async (refreshToken: string): Promise<boolean> => {
+    const operation = 'logout';
+
     return this.userTokenService
       .deleteByToken({
         token: refreshToken,
       })
-      .then((data) => (data ? true : false));
+      .then((data) => (data ? true : false))
+      .catch((err) => {
+        this.errorService.handleError({
+          err,
+          operation,
+          name: this.name,
+          logError: true,
+        });
+      });
   };
 }

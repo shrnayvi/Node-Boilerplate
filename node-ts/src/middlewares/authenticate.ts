@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 
 import { TYPES } from '../types';
 import config from '../config';
+import translationKey from '../config/translationKey';
 import container from '../inversify.config';
 import { ITokenService } from '../interfaces/ITokenService';
 import { IUserAuthData, IUserAuthRequest } from '../interfaces/IUserAuthRequest';
@@ -15,21 +16,21 @@ const TokenService: ITokenService = container.get<ITokenService>(TYPES.TokenServ
  * @param {Response} res Response object
  * @param {NextFunction} next Next function
  */
-export default async (eReq: Request, res: Response, next: NextFunction) => {
+export default async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const req = eReq as IUserAuthRequest;
+    const _req = req as IUserAuthRequest;
     let token = await TokenService.extractToken(req.headers);
     try {
       let decoded = await TokenService.verifyToken({
         token,
         secretKey: config.secretKey,
       });
-      req.user = decoded as IUserAuthData;
+      _req.user = decoded as IUserAuthData;
       next();
     } catch (err) {
       throw new NotAuthenticatedError({
-        message: 'User not authenticated',
-        data: err,
+        message: translationKey.userNotAuthenticated,
+        details: [translationKey.userNotAuthenticated],
       });
     }
   } catch (err) {

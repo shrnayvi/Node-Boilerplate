@@ -3,6 +3,7 @@ import { Request, Response, NextFunction } from 'express';
 
 import { TYPES } from '../types';
 import { IAppService } from '../interfaces/services/IAppService';
+import translationKeys from '../config/translationKey';
 
 import { AppError } from '../utils/ApiError';
 
@@ -23,7 +24,7 @@ export default class AppController {
   getAppError = async (req: Request, res: Response, next: NextFunction) => {
     const error = new AppError({
       message: 'Internal Server Error',
-      data: {},
+      details: [translationKeys.internalServerError],
     });
 
     next(error);

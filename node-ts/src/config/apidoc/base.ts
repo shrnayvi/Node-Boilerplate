@@ -1,22 +1,17 @@
 /**
- * @api {get} /Insomnia_2021-03-07.json Insomnia file
+ * @api {get} /v1/Insomnia_2021-06-20.json Insomnia file
  * @apiName GetInsomnia
- * @apiDescription Endpoint for Insomnia file
- * <br />
- * <a href="/v1/Insomnia_2021-03-07.json">Insomnia File</a>
+ * @apiDescription Endpoint for the insomnia
+ * <br/>
+ * <a href="../Insomnia_2021-06-20.json"> Insomnia Export</a>
  * @apiGroup Insomnia
- *
- *
- * @apiSuccessExample {json} Success-Response:
- *  HTTP/1.1 200
  */
 
 /**
- * @api {get} /status Status
+ * @api {get} /v1/status Status
  * @apiName GetStatus
  * @apiDescription Endpoint for the app status
  * @apiGroup App Status
- *
  *
  * @apiSuccessExample {json} Success-Response:
  *  HTTP/1.1 200
@@ -26,7 +21,7 @@
  */
 
 /**
- * @api {get} /error/500 Error 500
+ * @api {get} /v1/error/500 Error 500
  * @apiName GetInternalError
  * @apiDescription Endpoint internal server error
  * @apiGroup App Status

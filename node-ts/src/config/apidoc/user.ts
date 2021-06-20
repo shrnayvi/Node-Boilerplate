@@ -1,5 +1,5 @@
 /**
- * @api {get} /users Fetch all users
+ * @api {get} /v1/users Fetch all users
  * @apiDescription Get all users
  * @apiVersion 1.0.0
  * @apiName GetUsers
@@ -47,7 +47,7 @@
  */
 
 /**
- * @api {get} /users/:id Fetch single users
+ * @api {get} /v1/users/:id Fetch single users
  * @apiDescription Get single users
  * @apiVersion 1.0.0
  * @apiName GetSingleUser
@@ -89,7 +89,7 @@
  */
 
 /**
- * @api {put} /users/:id Update-user
+ * @api {put} /v1/users/:id Update-user
  * @apiDescription Update user
  * @apiVersion 1.0.0
  * @apiName UpdateUser
@@ -138,7 +138,7 @@
  */
 
 /**
- * @api {delete} /users/:id Delete-user
+ * @api {delete} /v1/users/:id Delete-user
  * @apiDescription Delete user
  * @apiVersion 1.0.0
  * @apiName DeleteUser

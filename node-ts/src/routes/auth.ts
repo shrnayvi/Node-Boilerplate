@@ -1,20 +1,18 @@
 import { Router } from 'express';
 
-import container from '../inversify.config';
 import { TYPES } from '../types';
+import container from '../inversify.config';
 import AuthController from '../controllers/AuthController';
 
+const authController: AuthController = container.get<AuthController>(TYPES.AuthController);
 const router = Router();
 
-const appController = container.get<AuthController>(TYPES.AuthController);
-
-router.post('/register', appController.signUp);
-router.post('/login', appController.login);
-router.post('/verify-email', appController.verifyEmail);
-router.post('/forgot-password', appController.forgotPassword);
-router.post('/reset-password', appController.resetPassword);
-router.post('/resend-email-verification', appController.resendEmailVerification);
-router.post('/renew-access-token', appController.renewAccessToken);
-router.post('/logout', appController.logout);
+router.post('/register', authController.register);
+router.post('/login', authController.login);
+router.post('/verify-email', authController.verifyEmail);
+router.post('/forgot-password', authController.forgotPassword);
+router.post('/reset-password', authController.resetPassword);
+router.post('/resend-email-verification', authController.resendEmailVerification);
+router.post('/logout', authController.logout);
 
 export default router;

@@ -20,3 +20,8 @@ export interface IPaginationData<T> {
   paging: IPagingResult;
   data: T;
 }
+
+export interface IGetAllAndCountResult<T> {
+  count: number;
+  rows: T;
+}

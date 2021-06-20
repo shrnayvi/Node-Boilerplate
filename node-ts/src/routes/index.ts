@@ -8,8 +8,8 @@ import userRouter from './user';
 const app: express.Application = express();
 
 app.use('/', appRouter);
+app.use('/token', userTokenRouter);
 app.use('/auth', authRouter);
 app.use('/users', userRouter);
-app.use('/token', userTokenRouter);
 
 export default app;

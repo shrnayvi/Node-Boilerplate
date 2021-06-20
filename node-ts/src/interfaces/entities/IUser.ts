@@ -32,17 +32,14 @@ export interface IUserUpdate {
 
 export interface IUserLogin {
   email: IUser['email'];
-  password: IUser['email'];
+  password: string;
 }
 
 export interface IUserLoginResponse {
   _id: string;
   token: string;
+  refreshToken: string;
   role: string;
-}
-
-export interface IUserLoginServiceResponse extends IUserLoginResponse {
-  refreshToken?: string;
 }
 
 export interface IUserSignupResponse {

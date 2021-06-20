@@ -1,12 +1,13 @@
 import { IUser, IUserDocument, IUserCreate, IUserUpdate } from '../entities/IUser';
-import { IPagingArgs, IPaginationData } from '../IPaging';
+import { IPagingArgs, IGetAllAndCountResult } from '../IPaging';
 
 export interface IUserRepository {
-  get(pagingArgs: IPagingArgs): Promise<IPaginationData<IUserDocument[]>>;
+  getAllAndCount(pagingArgs: IPagingArgs): Promise<IGetAllAndCountResult<IUserDocument[]>>;
   getById(id: string): Promise<IUserDocument | null>;
-  getSingleUser(query: any): Promise<IUserDocument | null>;
+  getUsers(query: any): Promise<IUserDocument[]>;
+  getUser(query: any): Promise<IUserDocument | null>;
   create(user: IUserCreate): Promise<IUserDocument>;
-  update(id: string, user: IUserUpdate): Promise<IUserDocument | null>;
+  update(user: { _id: string } & IUserUpdate): Promise<IUserDocument | null>;
   delete(id: string): Promise<IUserDocument | null>;
   changePassword(id: string, password: string): Promise<boolean>;
 }

@@ -2,11 +2,12 @@ const TYPES = {
   UserService: Symbol('UserService'),
   UserRepository: Symbol('UserRespository'),
   UserController: Symbol('UserController'),
+  AuthController: Symbol('AuthController'),
   AppService: Symbol('AppService'),
   AppController: Symbol('AppController'),
-  AuthController: Symbol('AuthController'),
   Logger: Symbol('Logger'),
   LoggerFactory: Symbol('LoggerFactory'),
+  GraphqlService: Symbol('GrahqlService'),
   TokenService: Symbol('TokenService'),
   AuthValidation: Symbol('AuthValidation'),
   HashService: Symbol('HashService'),
@@ -16,6 +17,8 @@ const TYPES = {
   UserTokenRepository: Symbol('UserTokenRepository'),
   UserTokenController: Symbol('UserTokenController'),
   AuthenticateMiddleware: Symbol('AuthenticateMiddleware'),
+  ErrorService: Symbol('ErrorService'),
+  JoiService: Symbol('JoiService'),
 };
 
 export { TYPES };

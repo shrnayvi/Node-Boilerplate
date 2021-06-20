@@ -1,4 +1,5 @@
 import { injectable } from 'inversify';
+import Joi from 'joi';
 
 import config from '../config';
 import { ValidationError, NotImplementedError } from '../utils/ApiError';
@@ -10,115 +11,84 @@ import {
   IResendVerificationEmail,
   IResetPasswordInput,
 } from '../interfaces/entities/IUser';
-import { IAuthValidation } from '../interfaces/validation/IAuthValidation';
 
-@injectable()
-export default class AuthValidation implements IAuthValidation {
-  validateSignUp = (data: IUserCreate) => {
-    let errors: Array<string> = [];
+const translationKey = config.translationKey;
 
-    if (!data.email) {
-      errors.push('Email required');
-    }
+const messages = {
+  email: {
+    'string.base': translationKey.emailRequired,
+    'string.empty': translationKey.emailRequired,
+    'string.email': translationKey.invalidEmail,
+    'any.required': translationKey.emailRequired,
+  },
+  password: {
+    'string.base': translationKey.passwordValidation,
+    'string.empty': translationKey.passwordValidation,
+    'any.required': translationKey.passwordValidation,
+  },
+  firstName: {
+    'string.base': translationKey.firstNameValidation,
+    'string.empty': translationKey.firstNameValidation,
+    'string.required': translationKey.firstNameValidation,
+  },
+  lastName: {
+    'string.base': translationKey.lastNameValidation,
+  },
+  username: {
+    'string.base': translationKey.lastNameValidation,
+  },
+  token: {
+    'string.base': translationKey.tokenValidation,
+    'string.empty': translationKey.tokenValidation,
+    'string.required': translationKey.tokenValidation,
+  },
+};
 
-    if (!data.password) {
-      errors.push('Password required');
-    }
+export default class AuthValidation {
+  static signUp() {
+    return Joi.object({
+      email: Joi.string().required().email().messages(messages.email),
 
-    if (!data.firstName) {
-      errors.push('Firstname required');
-    }
+      password: Joi.string().required().messages(messages.password),
 
-    if (errors.length) {
-      throw new ValidationError({
-        message: 'Validation Error',
-        data: errors,
-      });
-    }
+      firstName: Joi.string().required().messages(messages.firstName),
 
-    return true;
-  };
+      lastName: Joi.string().messages(messages.lastName),
 
-  validateLogin = (data: IUserLogin) => {
-    let errors: Array<string> = [];
-
-    if (!data.email) {
-      errors.push('Email required');
-    }
-
-    if (!data.password) {
-      errors.push('Password required');
-    }
-
-    if (errors.length) {
-      throw new ValidationError({
-        message: 'Validation Error',
-        data: errors,
-      });
-    }
-
-    return true;
-  };
-
-  validateEmailVerification = (data: IVerifyEmailInput) => {
-    let errors: Array<string> = [];
-
-    if (!data.token) {
-      errors.push('Token required');
-    }
-
-    if (errors.length) {
-      throw new ValidationError({
-        message: 'Validation Error',
-        data: errors,
-      });
-    }
-
-    return true;
-  };
-
-  validateForgotPassword = (data: IForgotPasswordInput) => {
-    let errors: Array<string> = [];
-
-    if (!data.email) {
-      errors.push('Email required');
-    }
-
-    if (errors.length) {
-      throw new ValidationError({
-        message: 'Validation Error',
-        data: errors,
-      });
-    }
-
-    return true;
-  };
-
-  validateResetPasswordValidation = (data: IResetPasswordInput) => {
-    let errors: Array<string> = [];
-
-    if (!data.token) {
-      errors.push('Token required');
-    }
-
-    if (!data.password) {
-      errors.push('Password required');
-    }
-
-    if (errors.length) {
-      throw new ValidationError({
-        message: 'Token or password is missing',
-        data: errors,
-      });
-    }
-
-    return true;
-  };
-
-  validateResendVerification = (data: IResendVerificationEmail) => {
-    throw new NotImplementedError({
-      message: 'Resend validation not implemented',
-      data,
+      username: Joi.string().messages(messages.lastName),
     });
-  };
+  }
+
+  static login() {
+    return Joi.object({
+      email: Joi.string().required().email().messages(messages.email),
+
+      password: Joi.string().required().messages(messages.password),
+    });
+  }
+
+  static emailVerification() {
+    return Joi.object({
+      token: Joi.string().required().messages(messages.token),
+    });
+  }
+
+  static forgotPassword() {
+    return Joi.object({
+      email: Joi.string().required().email().messages(messages.email),
+    });
+  }
+
+  static resetPassword() {
+    return Joi.object({
+      token: Joi.string().required().messages(messages.token),
+      password: Joi.string().required().messages(messages.password),
+    });
+  }
+
+  static resendVerificationEmail() {
+    return Joi.object({
+      email: Joi.string().required().email().messages(messages.email),
+    });
+  }
 }
