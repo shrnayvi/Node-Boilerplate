@@ -3,5 +3,5 @@
   "version": "1.0.0",
   "description": "Boilerplate API DOC",
   "title": "",
-  "url": "http://localhost:8080/v1"
+  "url": "http://production.com/:8080/v1"
 }

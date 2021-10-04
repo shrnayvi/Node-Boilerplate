@@ -2,15 +2,13 @@
 
 _The repo contains the boilerplate for `REST`._
 
-> Node.js, TypeScript, Express, IoC, SOLID Principles, Jest, REST, i18n, JWT Authentication, Mongoose.
-
-API uses `inversify` as IoC container. More details: https://www.npmjs.com/package/inversify
+> Node.js, Express, Jest, REST, JWT Authentication, Mongoose.
 
 ## Installation guide
 
 ```
 # clone repository
-$ git clone https://github.com/shrnayvi/Node-Boilerplate.git
+$ git clone git@github.com:svinayiw/node-boilerplate.git
 
 # install dependencies
 $ npm i
@@ -21,18 +19,43 @@ $ npm i
 $ npm run start:dev
 ```
 
-### `npm run test`
+### Generate API Docs
 
-Runs the test cases from the folder `src/tests`
+Local: `npm run docs` \
+Production: `npm run docs:production` \
 
-### `npm run build`
+### Seed database
 
-Builds the app for production to the `build` folder.
+`npm run db:seed`
 
-## Internationalization
+## Using Docker
 
-Uses the package `i18n`: https://www.npmjs.com/package/i18n
+Make sure docker and docker-compose is installed in your system
+
+```
+$ docker-compose up
+
+```
+
+In order to seed database:
+
+- First list the container using: `docker ps`
+
+- Seed the database: `docker exec [container_id] npm run db:seed`
+
+In order to generate api docs:
+
+Local - `docker exec [container_id] npm run docs` \
+Production - `docker exec [container_id] npm run docs:production`
+
+## `npm run test`
+
+Runs the test cases from the folder `test`
 
 ## Prettier
 
-`npm run prettier:fix`
+`npm run prettier:write`
+
+## Lint
+
+`npm run lint:fix`
