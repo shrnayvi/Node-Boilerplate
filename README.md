@@ -1,6 +1,6 @@
 # Node Boilerplate
 
-_The repo contains the boilerplate for `REST`._
+_The repo contains the boilerplate for `REST`. `main` branch contains the TypeScript code. For the JS code switch to `js` branch_
 
 > Node.js, TypeScript, Express, IoC, SOLID Principles, Jest, REST, i18n, JWT Authentication, Mongoose.
 
